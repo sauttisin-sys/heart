@@ -1,0 +1,487 @@
+/* ==========================================================================
+   Love you Forever — หน้ารูปโพลารอยด์ + หัวใจจากอนุภาค
+   โทนเดียวกับการ์ดครบรอบ 4 ปี: ครีม ชมพูฝุ่น กุหลาบ
+   ฟอนต์: Playfair Display (หัวข้อ) / Mali (ลายมือ) / Prompt (ข้อความทั่วไป)
+   ========================================================================== */
+
+:root {
+  /* ---- สีพื้นฐานจากการ์ดหน้าแรก ---- */
+  --paper: #fdfbf7;
+  --card: #fffaf5;
+  --blush: #fae1e1;
+  --blush-2: #f1cbcb;
+  --dusty: #d9a9a9;
+  --deep: #b57b7b;
+  --wine: #4a1a27;
+
+  /* ---- ตัวแปรธีม (ค่าเริ่มต้น = ธีมครีมของหน้า 1) ---- */
+  --ink: #8c545a;
+  --ink-soft: #a5686e;
+  --accent: #b57b7b;
+  --title: #a96b70;
+  --glass-fill: rgba(255, 250, 245, 0.72);
+  --glass-border: rgba(181, 123, 123, 0.28);
+  --hairline: rgba(181, 123, 123, 0.28);
+  --nav-fade: rgba(253, 251, 247, 0.88);
+  --halo: rgba(253, 251, 247, 0.55);
+
+  --font-display: "Playfair Display", "Prompt", serif;
+  --font-body: "Prompt", system-ui, -apple-system, sans-serif;
+  --font-hand: "Mali", "Prompt", cursive;
+
+  --nav-h: 76px;
+  --footer-h: 84px;
+  --edge-pad: clamp(20px, 5vw, 64px);
+}
+
+/* ธีมกุหลาบเข้ม — สคริปต์เปิดใช้เมื่อพื้นหลังเลื่อนเข้าสู่หน้าหัวใจ */
+body.theme-rose {
+  --ink: #fff1ee;
+  --ink-soft: #f6cdd4;
+  --accent: #f28ca4;
+  --title: #ffe9ec;
+  --glass-fill: rgba(74, 26, 39, 0.52);
+  --glass-border: rgba(255, 226, 232, 0.2);
+  --hairline: rgba(255, 226, 232, 0.22);
+  --nav-fade: rgba(74, 26, 39, 0.6);
+  --halo: rgba(74, 26, 39, 0.5);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Reset                                                                   */
+/* ---------------------------------------------------------------------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--dusty) var(--paper); }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: color 0.6s ease;
+}
+
+::selection { background: var(--blush-2); color: #5a2230; }
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--paper); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--blush-2), var(--deep));
+  border-radius: 6px;
+  border: 2px solid var(--paper);
+}
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+figure { margin: 0; }
+
+.nav-arrow svg,
+.lightbox-close svg {
+  width: 100%; height: 100%;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+.skip-link {
+  position: fixed; top: -60px; left: 16px; z-index: 200;
+  background: var(--card); color: #5a2230;
+  font-size: 0.85rem; font-weight: 500;
+  padding: 10px 16px; border-radius: 6px;
+  transition: top 0.2s ease;
+}
+.skip-link:focus { top: 16px; }
+
+a:focus-visible,
+button:focus-visible,
+.polaroid.has-photo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Canvas                                                                  */
+/* ---------------------------------------------------------------------- */
+#backgroundCanvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 0;
+  background: var(--paper);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Navigation                                                              */
+/* ---------------------------------------------------------------------- */
+.site-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  height: var(--nav-h);
+  display: flex; align-items: center;
+  background: linear-gradient(to bottom, var(--nav-fade), transparent);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.4s ease;
+}
+.site-nav.is-scrolled { border-bottom-color: var(--hairline); }
+
+.nav-inner {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  padding: 0 var(--edge-pad);
+}
+
+.nav-logo {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-display);
+  font-style: italic; font-weight: 500;
+  font-size: 1.15rem;
+  color: var(--title);
+  white-space: nowrap;
+  transition: color 0.6s ease;
+}
+.logo-heart { width: 16px; height: 16px; fill: var(--accent); flex-shrink: 0; transition: fill 0.6s ease; }
+
+.nav-links { display: flex; align-items: center; gap: clamp(18px, 3vw, 36px); }
+.nav-link {
+  position: relative;
+  font-size: 0.86rem; font-weight: 400;
+  color: var(--ink-soft);
+  padding: 6px 2px;
+  transition: color 0.3s ease;
+}
+.nav-link:hover, .nav-link.is-active { color: var(--ink); }
+.nav-link.is-active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px;
+  background: var(--accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scroll rail                                                             */
+/* ---------------------------------------------------------------------- */
+.scroll-rail {
+  position: fixed;
+  top: calc(var(--nav-h) + 24px);
+  bottom: calc(var(--footer-h) + 24px);
+  right: 22px; width: 2px; z-index: 40;
+  display: flex;
+}
+.scroll-rail-track {
+  position: relative; width: 100%; height: 100%;
+  background: var(--hairline); border-radius: 2px; overflow: hidden;
+  transition: background-color 0.6s ease;
+}
+.scroll-rail-fill {
+  position: absolute; top: 0; left: 0; width: 100%; height: 0%;
+  background: linear-gradient(to bottom, var(--blush-2), var(--accent));
+  will-change: height;
+}
+@media (max-width: 900px) { .scroll-rail { display: none; } }
+
+/* ---------------------------------------------------------------------- */
+/* Sections                                                                */
+/* ---------------------------------------------------------------------- */
+main { position: relative; z-index: 10; }
+
+.lab-section {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--nav-h) + 20px) var(--edge-pad) calc(var(--footer-h) + 28px);
+}
+
+.section-inner {
+  width: 100%; max-width: 1040px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: clamp(22px, 3.2vw, 34px);
+  text-align: center;
+}
+
+.section-copy {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; max-width: 640px;
+}
+/* ฮาโลบางๆ ให้ตัวหนังสืออ่านง่ายเมื่ออนุภาคผ่านด้านหลัง */
+.section-copy::before {
+  content: ""; position: absolute; inset: -30px -40px; z-index: -1;
+  background: radial-gradient(ellipse at center, var(--halo) 0%, transparent 72%);
+  pointer-events: none;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-style: italic; font-weight: 500;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 1.12;
+  color: var(--title);
+  transition: color 0.6s ease;
+}
+.section-desc {
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+  line-height: 1.8;
+  color: var(--ink-soft);
+  transition: color 0.6s ease;
+}
+
+/* ข้อความกลางหัวใจ */
+.heart-copy { gap: 14px; }
+.heart-copy .section-title {
+  font-size: clamp(2.4rem, 6.2vw, 4.4rem);
+  text-shadow: 0 2px 26px rgba(74, 26, 39, 0.55);
+}
+.heart-copy .section-desc { text-shadow: 0 1px 14px rgba(74, 26, 39, 0.55); }
+
+.scroll-cue {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: var(--ink-soft);
+  transition: opacity 0.4s ease;
+}
+.scroll-cue-label { font-family: var(--font-hand); font-size: 0.8rem; }
+.scroll-cue-line {
+  width: 1px; height: 28px;
+  background: linear-gradient(to bottom, var(--ink-soft), transparent);
+  animation: cue-travel 1.8s ease-in-out infinite;
+}
+@keyframes cue-travel {
+  0%   { transform: scaleY(0.3); transform-origin: top; opacity: 0.3; }
+  50%  { transform: scaleY(1);   transform-origin: top; opacity: 1; }
+  100% { transform: scaleY(0.3); transform-origin: bottom; opacity: 0.3; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* โพลารอยด์ (สไตล์เดียวกับการ์ดหน้าแรก)                                    */
+/* ---------------------------------------------------------------------- */
+.polaroid {
+  position: relative;
+  width: var(--pw, 200px);
+  background: #fffdf9;
+  padding: 9px 9px 0;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(120, 70, 70, 0.12), 0 10px 22px rgba(140, 80, 85, 0.22);
+  transform: translateY(var(--dy, 0px)) rotate(var(--rot, 0deg));
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+}
+.polaroid:hover {
+  transform: translateY(calc(var(--dy, 0px) - 6px)) rotate(0deg) scale(1.03);
+  box-shadow: 0 2px 4px rgba(120, 70, 70, 0.14), 0 18px 32px rgba(140, 80, 85, 0.28);
+  z-index: 2;
+}
+.polaroid.has-photo { cursor: zoom-in; }
+
+.polaroid .photo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(160deg, #f6e3e1, #ecd2d0);
+  overflow: hidden;
+}
+.polaroid .photo img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  filter: sepia(0.1) saturate(1.05) contrast(0.98);
+}
+.polaroid .photo img[hidden] { display: none; }
+.polaroid .photo::after {
+  content: ""; position: absolute; inset: 0;
+  box-shadow: inset 0 0 14px rgba(90, 50, 50, 0.22);
+  pointer-events: none;
+}
+.polaroid .placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  font-family: var(--font-hand); font-size: 0.78rem; color: #b98b8d;
+}
+.polaroid .placeholder svg {
+  width: 26px; height: 26px;
+  fill: none; stroke: currentColor; stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.polaroid .placeholder[hidden] { display: none; }
+.polaroid figcaption {
+  height: 42px;
+  display: grid; place-items: center;
+  font-family: var(--font-hand); font-size: 0.85rem;
+  color: #a5686e;
+}
+
+.tape {
+  position: absolute; top: -11px; left: 50%;
+  width: 62px; height: 21px; margin-left: -31px;
+  background: linear-gradient(180deg, rgba(243, 205, 205, 0.88), rgba(236, 190, 192, 0.82));
+  transform: rotate(var(--tape-rot, -4deg));
+  clip-path: polygon(0 0,100% 0,97% 25%,100% 50%,97% 75%,100% 100%,0 100%,3% 75%,0 50%,3% 25%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
+
+/* ---- กระดาน: แกลเลอรี หลายใบ ---- */
+.photo-board { width: 100%; display: flex; justify-content: center; }
+
+.photo-board[data-layout="gallery"] {
+  --gap: clamp(18px, 2.8vw, 32px);
+  --cols: 3;
+  --pw: clamp(150px, 17vw, 212px);
+  max-width: calc(var(--pw) * var(--cols) + var(--gap) * (var(--cols) - 1) + 4px);
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--gap);
+}
+
+/* ---- กระดาน: รูปใหญ่ใบเดียว ---- */
+.photo-board[data-layout="single"] { max-width: none; }
+.photo-board[data-layout="single"] .polaroid {
+  --pw: max(230px, min(500px, 86vw, calc(100svh - 400px)));
+  padding: 12px 12px 0;
+}
+.photo-board[data-layout="single"] .polaroid figcaption { height: 58px; font-size: 1.05rem; }
+.photo-board[data-layout="single"] .tape { width: 88px; height: 28px; margin-left: -44px; top: -14px; }
+
+/* การ์ดหล่นลงมาบนโต๊ะ — จังหวะเดียวตอนเปิดหน้า */
+.photo-board .polaroid {
+  animation: polaroid-drop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.12) calc(var(--i, 0) * 110ms + 150ms) backwards;
+}
+@keyframes polaroid-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--dy, 0px) - 26px)) rotate(calc(var(--rot, 0deg) - 7deg)) scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(var(--dy, 0px)) rotate(var(--rot, 0deg));
+  }
+}
+
+@media (max-width: 640px) {
+  .photo-board[data-layout="gallery"] {
+    --cols: 2;
+    --gap: 16px;
+    --pw: min(190px, calc((100vw - 2 * var(--edge-pad) - var(--gap) - 6px) / 2));
+  }
+  .polaroid { padding: 7px 7px 0; }
+  .polaroid figcaption { height: 36px; font-size: 0.78rem; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* ดูรูปขนาดใหญ่                                                            */
+/* ---------------------------------------------------------------------- */
+.photo-lightbox {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px;
+  background: rgba(44, 14, 22, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  visibility: hidden; opacity: 0;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+.photo-lightbox.is-open {
+  visibility: visible; opacity: 1;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+.lightbox-polaroid {
+  background: #fffdf9;
+  padding: 14px 14px 0;
+  border-radius: 2px;
+  max-width: min(92vw, 760px);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  transform: scale(0.96) rotate(-1deg);
+  transition: transform 0.35s ease;
+}
+.photo-lightbox.is-open .lightbox-polaroid { transform: scale(1) rotate(0deg); }
+.lightbox-polaroid img {
+  display: block; width: 100%; height: auto;
+  max-height: 72vh; object-fit: contain;
+  background: #f3e6e3;
+}
+.lightbox-polaroid figcaption {
+  min-height: 56px; display: grid; place-items: center;
+  font-family: var(--font-hand); font-size: 1rem; color: #a5686e;
+}
+.lightbox-close {
+  position: absolute; top: 20px; right: clamp(20px, 4vw, 48px);
+  width: 42px; height: 42px; padding: 11px;
+  border-radius: 50%;
+  color: #fff1ee;
+  background: rgba(255, 241, 238, 0.1);
+  border: 1px solid rgba(255, 226, 232, 0.22);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.lightbox-close:hover { background: rgba(255, 241, 238, 0.2); transform: scale(1.06); }
+
+/* ---------------------------------------------------------------------- */
+/* ปุ่มเลื่อนหน้าด้านล่าง                                                    */
+/* ---------------------------------------------------------------------- */
+.section-nav-bar {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  z-index: 50;
+  display: flex; align-items: center;
+  gap: clamp(14px, 3vw, 26px);
+  padding: 10px clamp(16px, 3vw, 24px);
+  border-radius: 999px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(140, 80, 85, 0.18);
+  transition: background-color 0.6s ease, border-color 0.6s ease;
+}
+
+.nav-arrow {
+  width: 30px; height: 30px; padding: 7px;
+  border-radius: 50%;
+  color: var(--ink-soft);
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+.nav-arrow:hover:not(:disabled) { color: var(--ink); background: rgba(181, 123, 123, 0.14); }
+.nav-arrow:active:not(:disabled) { transform: scale(0.92); }
+.nav-arrow:disabled { opacity: 0.3; cursor: default; }
+
+.section-dots { display: flex; align-items: center; gap: 9px; }
+.section-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--hairline);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.section-dot:hover { background: var(--ink-soft); }
+.section-dot.is-active { background: var(--accent); transform: scale(1.35); }
+
+.section-count {
+  font-family: var(--font-display); font-style: italic;
+  font-size: 0.85rem; letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  min-width: 4ch; text-align: center;
+  border-left: 1px solid var(--hairline);
+  padding-left: clamp(12px, 2.5vw, 20px);
+  transition: color 0.6s ease;
+}
+@media (max-width: 480px) { .section-count { display: none; } }
+
+/* ---------------------------------------------------------------------- */
+/* Responsive                                                              */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  :root { --nav-h: 66px; --footer-h: 76px; }
+}
+@media (max-width: 640px) {
+  .logo-text { font-size: 1rem; }
+  .lightbox-close { top: 14px; right: 14px; width: 38px; height: 38px; }
+  .photo-lightbox { padding: 16px; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Reduced motion                                                          */
+/* ---------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .scroll-cue-line { animation: none; }
+  .photo-board .polaroid { animation: none; }
+  .polaroid, .photo-lightbox, .lightbox-polaroid, .section-dot, .nav-arrow { transition: none; }
+}

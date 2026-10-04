@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Love you Forever</title>
+  <meta name="description" content="ภาพความทรงจำของเรา และหัวใจที่ทำจากอนุภาคนับพัน" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Mali:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,500&family=Prompt:wght@300;400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">ข้ามไปที่เนื้อหา</a>
+
+  <!-- พื้นหลังอนุภาค (วาดด้วย script.js) -->
+  <canvas id="backgroundCanvas" aria-hidden="true"></canvas>
+
+  <!-- ================= เมนูด้านบน ================= -->
+  <header class="site-nav" id="siteNav">
+    <div class="nav-inner">
+      <a href="#section-01" class="nav-logo">
+        <svg class="logo-heart" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+        <span class="logo-text">Love you Forever</span>
+      </a>
+
+      <nav class="nav-links" aria-label="เมนูหลัก">
+        <a href="#section-01" class="nav-link" data-nav-index="0">ภาพของเรา</a>
+        <a href="#section-02" class="nav-link" data-nav-index="1">My Heart</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- เส้นบอกตำแหน่งการเลื่อนด้านขวา -->
+  <aside class="scroll-rail" aria-hidden="true">
+    <div class="scroll-rail-track">
+      <div class="scroll-rail-fill" id="scrollRailFill"></div>
+    </div>
+  </aside>
+
+  <main id="main">
+
+    <!-- ============================================================
+         หน้า 1 : กระดานโพลารอยด์
+         จำนวนการ์ดและรูป ตั้งค่าที่ต้นไฟล์ script.js (LAYOUT / PHOTOS)
+    ============================================================= -->
+    <section
+      class="lab-section"
+      id="section-01"
+      data-index="0"
+      data-formation="free"
+      aria-label="ภาพของเรา"
+    >
+      <div class="section-inner">
+        <!-- แก้หัวข้อและข้อความหน้านี้ได้ตรงนี้ -->
+        <div class="section-copy">
+          <h1 class="section-title"> Memories</h1>
+          <p class="section-desc">ขอบคุณที่อยู่ข้างกันมาตลอด และผ่านหลายอย่างมาด้วยกัน</p>
+        </div>
+
+        <div class="photo-board" id="photoBoard" data-layout="gallery"></div>
+
+        <div class="scroll-cue" id="scrollCue" aria-hidden="true">
+          <span class="scroll-cue-label">เลื่อนลง เค้าอยากให้ของขวัญห</span>
+          <span class="scroll-cue-line"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         หน้า 2 : หัวใจจากอนุภาค
+    ============================================================= -->
+    <section
+      class="lab-section"
+      id="section-02"
+      data-index="1"
+      data-formation="heart"
+      aria-label="หัวใจ"
+    >
+      <div class="section-inner">
+        <!-- แก้ข้อความกลางหัวใจได้ตรงนี้ -->
+        <div class="section-copy heart-copy">
+          <h2 class="section-title">รัก นะ<br />และ ตลอดไป</h2>
+          <p class="section-desc">ขอบคุณที่อยู่ข้างกันมาตลอด เธอเป็นคนแรกและคนเดียวที่อยู่ด้วยกันตลอดมา เค้าไม่ได้มีอะไรหวืหวา นอกจากมีแค่เรา</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ดูรูปขนาดใหญ่ (กดที่การ์ดที่ใส่รูปแล้ว) -->
+  <div
+    class="photo-lightbox"
+    id="photoLightbox"
+    aria-hidden="true"
+    role="dialog"
+    aria-modal="true"
+    aria-label="ดูรูปขนาดใหญ่"
+  >
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="ปิดรูป">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+    <figure class="lightbox-polaroid">
+      <img id="lightboxImage" src="" alt="" />
+      <figcaption id="lightboxCaption"></figcaption>
+    </figure>
+  </div>
+
+  <!-- ปุ่มเลื่อนหน้าด้านล่าง -->
+  <footer class="section-nav-bar" aria-label="เลื่อนระหว่างหน้า">
+    <button type="button" class="nav-arrow" id="prevSection" aria-label="หน้าก่อนหน้า">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+    </button>
+
+    <div class="section-dots" id="sectionDots" role="tablist" aria-label="ไปยังหน้า"></div>
+
+    <button type="button" class="nav-arrow" id="nextSection" aria-label="หน้าถัดไป">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+    </button>
+
+    <span class="section-count" id="sectionCount" aria-live="polite">1 / 2</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
